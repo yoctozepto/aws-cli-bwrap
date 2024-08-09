@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2024 Radosław Piliszek <radek@piliszek.it>
+# SPDX-License-Identifier: MPL-2.0
+
+set -e
+set -u
+
+target_dir="$HOME/.local/opt/aws-cli/$AWS_CLI_VERSION"
+
+exec bwrap --ro-bind "$target_dir" / --bind /home /home --ro-bind /etc/resolv.conf /etc/resolv.conf --dev /dev --proc /proc -- /usr/local/bin/aws $@

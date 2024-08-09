@@ -1,0 +1,21 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2024 Radosław Piliszek <radek@piliszek.it>
+# SPDX-License-Identifier: MPL-2.0
+
+set -e
+set -u
+set -o pipefail
+
+echo "Ensuring AWS CLI v$AWS_CLI_VERSION is installed"
+
+target_dir="$HOME/.local/opt/aws-cli/$AWS_CLI_VERSION"
+target_tar="$HOME/.local/opt/aws-cli/$AWS_CLI_VERSION.tar"
+
+mkdir -p "$target_dir"
+[ -f "$target_tar" ] || (echo "Downloading the image..."; crane export amazon/aws-cli:$AWS_CLI_VERSION "$target_tar")
+[ -d "$target_dir/usr" ] || (echo "Extracting the image..."; tar -C "$target_dir" -x -f "$target_tar" --exclude dev/ --exclude proc/ --exclude sys/)
+mkdir -p "$target_dir"/dev
+mkdir -p "$target_dir"/proc
+mkdir -p "$target_dir"/sys
+# fix some awkward perms (because they make it harder to remove the entire hierarchy)
+find "$target_dir" -type d ! -writable | xargs chmod u+w
